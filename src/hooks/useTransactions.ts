@@ -9,7 +9,7 @@ export const useTransactions = () => {
       const { data, error } = await supabase
         .from('Transactions')
         .select('*')
-        .order('transaction_date', { ascending: false });
+        .order('date', { ascending: false });
 
       if (error) {
         console.error('Error fetching transactions:', error);
@@ -21,18 +21,18 @@ export const useTransactions = () => {
   });
 };
 
-export const useTransactionsByStatus = (status: string) => {
+export const useTransactionsByCategory = (category: string) => {
   return useQuery({
-    queryKey: ['transactions', 'status', status],
+    queryKey: ['transactions', 'category', category],
     queryFn: async (): Promise<Transaction[]> => {
       const { data, error } = await supabase
         .from('Transactions')
         .select('*')
-        .eq('status', status)
-        .order('transaction_date', { ascending: false });
+        .eq('category', category)
+        .order('date', { ascending: false });
 
       if (error) {
-        console.error('Error fetching transactions by status:', error);
+        console.error('Error fetching transactions by category:', error);
         throw error;
       }
 
@@ -48,9 +48,9 @@ export const useTransactionsByDateRange = (startDate: string, endDate: string) =
       const { data, error } = await supabase
         .from('Transactions')
         .select('*')
-        .gte('transaction_date', startDate)
-        .lte('transaction_date', endDate)
-        .order('transaction_date', { ascending: false });
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: false });
 
       if (error) {
         console.error('Error fetching transactions by date range:', error);

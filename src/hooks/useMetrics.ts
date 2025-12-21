@@ -9,7 +9,7 @@ export const useMetrics = () => {
       const { data, error } = await supabase
         .from('Metrics')
         .select('*')
-        .order('recorded_at', { ascending: false });
+        .order('recorder_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching metrics:', error);
@@ -29,7 +29,7 @@ export const useMetricsByCategory = (category: string) => {
         .from('Metrics')
         .select('*')
         .eq('category', category)
-        .order('recorded_at', { ascending: false });
+        .order('recorder_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching metrics by category:', error);
