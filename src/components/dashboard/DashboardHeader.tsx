@@ -6,10 +6,11 @@ interface DashboardHeaderProps {
   title: string;
   subtitle?: string;
   onRefresh?: () => void;
+  onExport?: () => void;
   isLoading?: boolean;
 }
 
-const DashboardHeader = ({ title, subtitle, onRefresh, isLoading }: DashboardHeaderProps) => {
+const DashboardHeader = ({ title, subtitle, onRefresh, onExport, isLoading }: DashboardHeaderProps) => {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-background/80 backdrop-blur-lg px-6">
       <div className="flex items-center gap-4">
@@ -34,10 +35,12 @@ const DashboardHeader = ({ title, subtitle, onRefresh, isLoading }: DashboardHea
             Refresh
           </Button>
         )}
-        <Button variant="outline" size="sm" className="gap-2">
-          <Download className="h-4 w-4" />
-          Export
-        </Button>
+        {onExport && (
+          <Button variant="outline" size="sm" className="gap-2" onClick={onExport}>
+            <Download className="h-4 w-4" />
+            Export
+          </Button>
+        )}
       </div>
     </header>
   );
