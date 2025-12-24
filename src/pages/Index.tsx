@@ -1,8 +1,12 @@
-import { DollarSign, Hash, Percent, MapPin } from 'lucide-react';
+import { useState } from 'react';
+import { DollarSign, Hash, Percent, MapPin, Users, TrendingUp } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import KPICard from '@/components/dashboard/KPICard';
+import DashboardFilters, { FilterState } from '@/components/dashboard/DashboardFilters';
+import TimeSeriesChart from '@/components/dashboard/TimeSeriesChart';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useFilteredChartData } from '@/hooks/useFilteredChartData';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const formatCurrency = (value: number) => {
@@ -41,6 +45,11 @@ const KPISkeletons = () => (
 
 const Index = () => {
   const { stats, isLoading, refetch } = useDashboardStats();
+  const [filters, setFilters] = useState<FilterState>({
+    dateRange: undefined,
+    region: 'all',
+  });
+  const { dailyData, isLoading: isChartLoading } = useFilteredChartData(filters);
 
   return (
     <DashboardLayout>
@@ -95,18 +104,41 @@ const Index = () => {
             )}
           </section>
 
-          {/* Placeholder for Charts */}
+          {/* Filters Section */}
+          <section className="rounded-xl border border-border bg-card p-4">
+            <DashboardFilters filters={filters} onFiltersChange={setFilters} />
+          </section>
+
+          {/* Time Series Charts */}
           <section>
             <h2 className="mb-6 text-lg font-semibold font-display text-foreground">
-              Charts & Analytics
+              Trends Over Time
             </h2>
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <div className="rounded-xl border border-border bg-card p-6 h-80 flex items-center justify-center">
-                <p className="text-muted-foreground">Sales Trends Chart</p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-6 h-80 flex items-center justify-center">
-                <p className="text-muted-foreground">Category Distribution Chart</p>
-              </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <TimeSeriesChart
+                title="Visitors by Day"
+                data={dailyData.map((d) => ({ date: d.date, value: d.visitors }))}
+                isLoading={isChartLoading}
+                primaryLabel="Visitors"
+                primaryColor="hsl(173, 80%, 45%)"
+                formatValue={formatNumber}
+              />
+              <TimeSeriesChart
+                title="Customers by Day"
+                data={dailyData.map((d) => ({ date: d.date, value: d.customers }))}
+                isLoading={isChartLoading}
+                primaryLabel="Unique Customers"
+                primaryColor="hsl(199, 89%, 55%)"
+                formatValue={formatNumber}
+              />
+              <TimeSeriesChart
+                title="Revenue by Day"
+                data={dailyData.map((d) => ({ date: d.date, value: d.revenue }))}
+                isLoading={isChartLoading}
+                primaryLabel="Revenue"
+                primaryColor="hsl(142, 70%, 45%)"
+                formatValue={formatCurrency}
+              />
             </div>
           </section>
         </div>
