@@ -1,13 +1,18 @@
 import { useState } from 'react';
-import { DollarSign, Hash, Percent, MapPin, Users, TrendingUp } from 'lucide-react';
+import { DollarSign, Hash, Percent, MapPin } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import KPICard from '@/components/dashboard/KPICard';
 import DashboardFilters, { FilterState } from '@/components/dashboard/DashboardFilters';
 import TimeSeriesChart from '@/components/dashboard/TimeSeriesChart';
+import TransactionsTable from '@/components/dashboard/TransactionsTable';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useFilteredChartData } from '@/hooks/useFilteredChartData';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
+import type { Transaction } from '@/types/database';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -49,7 +54,26 @@ const Index = () => {
     dateRange: undefined,
     region: 'all',
   });
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const { dailyData, isLoading: isChartLoading } = useFilteredChartData(filters);
+
+  const handleTransactionClick = (transaction: Transaction) => {
+    if (selectedTransaction?.transaction_id === transaction.transaction_id) {
+      setSelectedTransaction(null);
+      setFilters({ dateRange: undefined, region: 'all' });
+    } else {
+      setSelectedTransaction(transaction);
+      setFilters({
+        ...filters,
+        region: transaction.region.toLowerCase(),
+      });
+    }
+  };
+
+  const clearTransactionFilter = () => {
+    setSelectedTransaction(null);
+    setFilters({ dateRange: filters.dateRange, region: 'all' });
+  };
 
   return (
     <DashboardLayout>
@@ -106,7 +130,24 @@ const Index = () => {
 
           {/* Filters Section */}
           <section className="rounded-xl border border-border bg-card p-4">
-            <DashboardFilters filters={filters} onFiltersChange={setFilters} />
+            <div className="flex flex-wrap items-center gap-4">
+              <DashboardFilters filters={filters} onFiltersChange={setFilters} />
+              {selectedTransaction && (
+                <div className="flex items-center gap-2 ml-auto">
+                  <Badge variant="outline" className="gap-2 py-1.5 px-3">
+                    Filtered by: {selectedTransaction.customer_name}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearTransactionFilter}
+                    className="h-7 w-7 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Time Series Charts */}
@@ -140,6 +181,17 @@ const Index = () => {
                 formatValue={formatCurrency}
               />
             </div>
+          </section>
+
+          {/* Transactions Table */}
+          <section>
+            <h2 className="mb-6 text-lg font-semibold font-display text-foreground">
+              Transactions
+            </h2>
+            <TransactionsTable
+              onRowClick={handleTransactionClick}
+              selectedTransactionId={selectedTransaction?.transaction_id}
+            />
           </section>
         </div>
       </div>
