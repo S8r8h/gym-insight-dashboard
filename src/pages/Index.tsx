@@ -8,10 +8,13 @@ import TimeSeriesChart from '@/components/dashboard/TimeSeriesChart';
 import TransactionsTable from '@/components/dashboard/TransactionsTable';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useFilteredChartData } from '@/hooks/useFilteredChartData';
+import { useTransactions } from '@/hooks/useTransactions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import { exportToCsv } from '@/utils/exportCsv';
+import { toast } from '@/hooks/use-toast';
 import type { Transaction } from '@/types/database';
 
 const formatCurrency = (value: number) => {
@@ -50,6 +53,7 @@ const KPISkeletons = () => (
 
 const Index = () => {
   const { stats, isLoading, refetch } = useDashboardStats();
+  const { data: transactions } = useTransactions();
   const [filters, setFilters] = useState<FilterState>({
     dateRange: undefined,
     region: 'all',
@@ -75,12 +79,54 @@ const Index = () => {
     setFilters({ dateRange: filters.dateRange, region: 'all' });
   };
 
+  const handleExport = () => {
+    // Export daily trends data
+    if (dailyData.length > 0) {
+      exportToCsv(
+        {
+          headers: ['Date', 'Visitors', 'Customers', 'Revenue'],
+          rows: dailyData.map((d) => [d.date, d.visitors, d.customers, d.revenue]),
+        },
+        `dashboard-trends-${new Date().toISOString().split('T')[0]}`
+      );
+    }
+
+    // Export transactions data
+    if (transactions && transactions.length > 0) {
+      const filteredTransactions = filters.region !== 'all'
+        ? transactions.filter((t) => t.region.toLowerCase() === filters.region)
+        : transactions;
+
+      exportToCsv(
+        {
+          headers: ['Customer', 'Product', 'Quantity', 'Rate', 'Amount', 'Date', 'Region'],
+          rows: filteredTransactions.map((t) => [
+            t.customer_name,
+            t.product_name,
+            t.sales_quantity,
+            t.sales_rate,
+            t.sales_amount,
+            t.recorded_at,
+            t.region,
+          ]),
+        },
+        `transactions-${new Date().toISOString().split('T')[0]}`
+      );
+    }
+
+    toast({
+      title: 'Export Complete',
+      description: 'Your data has been exported to CSV files.',
+    });
+  };
+
   return (
     <DashboardLayout>
       <DashboardHeader 
         title="Dashboard" 
         subtitle="Overview of your business metrics"
         onRefresh={refetch}
+        onExport={handleExport}
         isLoading={isLoading}
       />
       
