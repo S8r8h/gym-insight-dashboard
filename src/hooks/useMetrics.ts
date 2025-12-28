@@ -1,12 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Metric } from '@/types/database';
+import type { Metric, Database } from '@/types/database';
+import { SupabaseClient } from '@supabase/supabase-js';
+
+// Cast supabase client to use our custom database types
+const typedSupabase = supabase as unknown as SupabaseClient<Database>;
 
 export const useMetrics = () => {
   return useQuery({
     queryKey: ['metrics'],
     queryFn: async (): Promise<Metric[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await typedSupabase
         .from('Metrics')
         .select('*')
         .order('recorder_at', { ascending: false });
@@ -25,7 +29,7 @@ export const useMetricsByCategory = (category: string) => {
   return useQuery({
     queryKey: ['metrics', 'category', category],
     queryFn: async (): Promise<Metric[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await typedSupabase
         .from('Metrics')
         .select('*')
         .eq('category', category)
