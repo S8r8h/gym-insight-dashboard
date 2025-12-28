@@ -6,6 +6,7 @@ import KPICard from '@/components/dashboard/KPICard';
 import DashboardFilters, { FilterState } from '@/components/dashboard/DashboardFilters';
 import TimeSeriesChart from '@/components/dashboard/TimeSeriesChart';
 import TransactionsTable from '@/components/dashboard/TransactionsTable';
+import { AIInsights } from '@/components/dashboard/AIInsights';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useFilteredChartData } from '@/hooks/useFilteredChartData';
 import { useTransactions } from '@/hooks/useTransactions';
@@ -227,6 +228,14 @@ const Index = () => {
                 formatValue={formatCurrency}
               />
             </div>
+          </section>
+
+          {/* AI Insights Section */}
+          <section>
+            <h2 className="mb-6 text-lg font-semibold font-display text-foreground">
+              AI Reasoning Insights
+            </h2>
+            <AIInsights />
           </section>
 
           {/* Transactions Table */}
