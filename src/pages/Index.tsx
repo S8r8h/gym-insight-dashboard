@@ -3,6 +3,7 @@ import { DollarSign, Hash, Percent, MapPin } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import KPICard from '@/components/dashboard/KPICard';
+import { KPIDrilldown, DrilldownType } from '@/components/dashboard/KPIDrilldown';
 import DashboardFilters, { FilterState } from '@/components/dashboard/DashboardFilters';
 import TimeSeriesChart from '@/components/dashboard/TimeSeriesChart';
 import TransactionsTable from '@/components/dashboard/TransactionsTable';
@@ -61,6 +62,21 @@ const Index = () => {
   });
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const { dailyData, isLoading: isChartLoading } = useFilteredChartData(filters);
+  
+  // Drilldown state
+  const [drilldownType, setDrilldownType] = useState<DrilldownType>(null);
+  const [drilldownTitle, setDrilldownTitle] = useState('');
+  const [drilldownValue, setDrilldownValue] = useState('');
+
+  const openDrilldown = (type: DrilldownType, title: string, value: string) => {
+    setDrilldownType(type);
+    setDrilldownTitle(title);
+    setDrilldownValue(value);
+  };
+
+  const closeDrilldown = () => {
+    setDrilldownType(null);
+  };
 
   const handleTransactionClick = (transaction: Transaction) => {
     if (selectedTransaction?.transaction_id === transaction.transaction_id) {
@@ -149,6 +165,7 @@ const Index = () => {
                   icon={<DollarSign className="h-6 w-6" />}
                   trend={{ value: 12.5, isPositive: true }}
                   delay={0}
+                  onClick={() => openDrilldown('sales', 'Total Sales', formatCurrency(stats.totalSales))}
                 />
                 <KPICard
                   title="Transactions"
@@ -156,6 +173,7 @@ const Index = () => {
                   icon={<Hash className="h-6 w-6" />}
                   trend={{ value: 8.2, isPositive: true }}
                   delay={100}
+                  onClick={() => openDrilldown('transactions', 'Transactions', formatNumber(stats.transactionCount))}
                 />
                 <KPICard
                   title="Avg Gross Margin"
@@ -163,6 +181,7 @@ const Index = () => {
                   icon={<Percent className="h-6 w-6" />}
                   trend={{ value: 2.1, isPositive: true }}
                   delay={200}
+                  onClick={() => openDrilldown('margin', 'Avg Gross Margin', formatPercent(stats.avgGrossMargin))}
                 />
                 <KPICard
                   title="Top Region"
@@ -170,6 +189,7 @@ const Index = () => {
                   icon={<MapPin className="h-6 w-6" />}
                   subtitle="Highest sales volume"
                   delay={300}
+                  onClick={() => openDrilldown('region', 'Top Region', stats.topRegion)}
                 />
               </div>
             )}
@@ -250,6 +270,14 @@ const Index = () => {
           </section>
         </div>
       </div>
+      {/* KPI Drilldown Drawer */}
+      <KPIDrilldown
+        isOpen={drilldownType !== null}
+        onClose={closeDrilldown}
+        type={drilldownType}
+        title={drilldownTitle}
+        value={drilldownValue}
+      />
     </DashboardLayout>
   );
 };
