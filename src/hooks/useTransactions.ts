@@ -1,16 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import type { Transaction, Database } from '@/types/database';
-import { SupabaseClient } from '@supabase/supabase-js';
-
-// Cast supabase client to use our custom database types
-const typedSupabase = supabase as unknown as SupabaseClient<Database>;
+import { externalSupabase } from '@/integrations/supabase/externalClient';
+import type { Transaction } from '@/types/database';
 
 export const useTransactions = () => {
   return useQuery({
     queryKey: ['transactions'],
     queryFn: async (): Promise<Transaction[]> => {
-      const { data, error } = await typedSupabase
+      const { data, error } = await externalSupabase
         .from('Transactions')
         .select('*')
         .order('date', { ascending: false });
@@ -29,7 +25,7 @@ export const useTransactionsByCategory = (category: string) => {
   return useQuery({
     queryKey: ['transactions', 'category', category],
     queryFn: async (): Promise<Transaction[]> => {
-      const { data, error } = await typedSupabase
+      const { data, error } = await externalSupabase
         .from('Transactions')
         .select('*')
         .eq('category', category)
@@ -49,7 +45,7 @@ export const useTransactionsByDateRange = (startDate: string, endDate: string) =
   return useQuery({
     queryKey: ['transactions', 'dateRange', startDate, endDate],
     queryFn: async (): Promise<Transaction[]> => {
-      const { data, error } = await typedSupabase
+      const { data, error } = await externalSupabase
         .from('Transactions')
         .select('*')
         .gte('date', startDate)
