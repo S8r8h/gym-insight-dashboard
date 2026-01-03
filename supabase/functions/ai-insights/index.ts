@@ -18,25 +18,41 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are a business intelligence AI analyst. You analyze transaction and metrics data to provide actionable insights.
+    const kpiContext = context.kpis ? `
+KPI Summary:
+- Total Sales: $${context.kpis.totalSales?.toLocaleString() || 'N/A'}
+- Transaction Count: ${context.kpis.transactionCount || 'N/A'}
+- Average Gross Margin: ${context.kpis.avgGrossMargin?.toFixed(1) || 'N/A'}%
+- Top Performing Region: ${context.kpis.topRegion || 'N/A'}
+` : '';
+
+    const systemPrompt = `You are an expert business intelligence analyst with deep reasoning capabilities. You analyze transaction and metrics data to provide actionable insights.
 
 Your role is to:
-1. Identify patterns, trends, and anomalies in the data
-2. Provide reasoning for your observations
-3. Suggest actionable recommendations
-4. Be concise but thorough
+1. **Identify patterns, trends, and anomalies** in the data with clear reasoning
+2. **Predict future outcomes** based on observed patterns (retention, churn, growth)
+3. **Provide specific, actionable recommendations** with expected impact
+4. **Identify peak activity periods** and optimize resource allocation suggestions
+5. **Assess risks** and suggest mitigation strategies
 
-Data Context:
+## Data Context
+${kpiContext}
 - Total transactions: ${context.totalTransactions}
 - Total metrics records: ${context.totalMetrics}
 
-Recent Transactions Sample:
+## Recent Transactions Sample
 ${JSON.stringify(context.transactions, null, 2)}
 
-Recent Metrics Sample:
+## Recent Metrics Sample
 ${JSON.stringify(context.metrics, null, 2)}
 
-Provide your analysis in a clear, structured format. Use bullet points for key findings and be specific with numbers when available.`;
+## Response Guidelines
+- Use **markdown formatting** for clear structure (headers, bullet points, bold text)
+- Be specific with numbers, percentages, and dates
+- Provide reasoning for each insight ("This suggests..." or "This indicates...")
+- Prioritize insights by impact (high/medium/low)
+- Include at least one actionable recommendation
+- Keep total response under 500 words but be thorough`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
