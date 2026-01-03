@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface KPICardProps {
@@ -12,9 +12,10 @@ interface KPICardProps {
   };
   subtitle?: string;
   delay?: number;
+  onClick?: () => void;
 }
 
-const KPICard = ({ title, value, icon, trend, subtitle, delay = 0 }: KPICardProps) => {
+const KPICard = ({ title, value, icon, trend, subtitle, delay = 0, onClick }: KPICardProps) => {
   const getTrendIcon = () => {
     if (!trend) return null;
     if (trend.value === 0) return <Minus className="h-3 w-3" />;
@@ -27,8 +28,12 @@ const KPICard = ({ title, value, icon, trend, subtitle, delay = 0 }: KPICardProp
 
   return (
     <div 
-      className="kpi-card opacity-0 animate-fade-in"
+      className={cn(
+        "kpi-card opacity-0 animate-fade-in relative group",
+        onClick && "cursor-pointer hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200"
+      )}
       style={{ animationDelay: `${delay}ms` }}
+      onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="space-y-3">
@@ -58,6 +63,14 @@ const KPICard = ({ title, value, icon, trend, subtitle, delay = 0 }: KPICardProp
           {icon}
         </div>
       </div>
+      {onClick && (
+        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 text-xs text-primary">
+            <span>View details</span>
+            <ChevronRight className="h-3 w-3" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
